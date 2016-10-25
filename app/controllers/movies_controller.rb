@@ -10,8 +10,37 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
+  # HW  Part 1: Sort the list of movies (15 points) && Part 2: Filter the list of movies by rating (15 points) && Part 3: Remember the sorting and filtering settings (70 points)
   def index
-    @movies = Movie.all
+    
+    # session used for memory
+    sort = params[:sort_by] || session[:sort_by]
+    
+    if sort == 'title'
+      @movies = Movie.order(sort)
+      @title_header = 'hilite'
+    end
+    
+    if sort == 'release_date'
+      @movies = Movie.order(sort)
+      @release_date_header = 'hilite'
+    end
+    
+    @all_ratings = Movie.all_ratings
+    @rating_filter = params[:ratings] || session[:ratings] || nil
+    
+    if @rating_filter == nil
+      @rating_filter = Hash[@all_ratings.map {|rating| [rating, rating]}]
+    end
+     
+    # for memory with sorting and filtering
+    session[:sort] = sort
+    session[:ratings] = @rating_filter
+    
+    @rating_filter = @rating_filter.keys
+    @movies = Movie.where(:rating => @rating_filter)
+    @movies = @movies.order(sort)
+    
   end
 
   def new
